@@ -1,7 +1,8 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
-from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun
+from langchain_community.tools import ArxivQueryRun
+from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
 from langchain_tavily import TavilySearch
 from langchain_groq import ChatGroq
@@ -78,16 +79,16 @@ def initialize_chatbot():
     api_wrapper_arxiv = ArxivAPIWrapper(top_k_results=2, doc_content_chars_max=500)
     arxiv = ArxivQueryRun(api_wrapper=api_wrapper_arxiv)
     
-    api_wrapper_wiki = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=500)
-    wiki = WikipediaQueryRun(api_wrapper=api_wrapper_wiki)
+    wiki = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     
     tavily = TavilySearch()
+    tavily_tool = tavily.as_tool()
     
-    tools = [arxiv, wiki, tavily]
+    tools = [arxiv, wiki, tavily_tool]
     
     # Initialize LLM
     llm = ChatGroq(model="openai/gpt-oss-120b")
-    llm_with_tools = llm.bind_tools(tools)
+    llm_with_tools = llm.bind_tools(tools, strict=True)
     
     # Node definition
     def tool_calling_llm(state: State):
@@ -96,7 +97,7 @@ def initialize_chatbot():
     # Build graph
     builder = StateGraph(State)
     builder.add_node("tool_calling_llm", tool_calling_llm)
-    builder.add_node("tools", ToolNode(tools))
+    builder.add_node("tools", ToolNode(tools, handle_tool_errors=True))
     builder.add_edge(START, "tool_calling_llm")
     builder.add_conditional_edges(
         "tool_calling_llm",

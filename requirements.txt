@@ -2,6 +2,7 @@ streamlit
 langchain
 langchain-community
 langchain-groq
+langchain-tavily
 langgraph
 python-dotenv
 arxiv

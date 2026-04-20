@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
@@ -81,7 +81,7 @@ def initialize_chatbot():
     api_wrapper_wiki = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=500)
     wiki = WikipediaQueryRun(api_wrapper=api_wrapper_wiki)
     
-    tavily = TavilySearchResults()
+    tavily = TavilySearch()
     
     tools = [arxiv, wiki, tavily]
     
